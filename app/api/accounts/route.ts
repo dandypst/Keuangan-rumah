@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   const id = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
   const color = PAL[[...name].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
   const { error } = await db.from("accounts").insert({
-    id, name, type, sub: String(b.sub ?? "").slice(0, 40), color, symbol, source,
+    id, name, type, sub: String(b.sub ?? "").slice(0, 40), color, symbol, source, logo: String(b.logo ?? "").trim().slice(0, 300) || null,
     balance: source ? 0 : amount, qty: source ? amount : null, sort: (last?.[0]?.sort ?? 0) + 1,
   });
   if (error) return no(error.message, 500);
@@ -42,7 +42,7 @@ export async function PATCH(req: Request) {
   if (!a) return no("not found", 404);
   const name = String(b.name ?? "").trim().slice(0, 40);
   if (!name) return no();
-  const upd: Record<string, unknown> = { name, sub: String(b.sub ?? "").slice(0, 40) };
+  const upd: Record<string, unknown> = { name, sub: String(b.sub ?? "").slice(0, 40), logo: String(b.logo ?? "").trim().slice(0, 300) || null };
   if (a.id !== "jago") {
     // saldo Bank Jago dihitung dari Kantong, jadi tidak bisa diubah manual
     const n = Number(b.amount);
