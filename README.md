@@ -28,3 +28,9 @@ Harga diperbarui tiap 30 detik. Yahoo adalah endpoint tidak resmi dan CoinGecko 
 
 ## Belum ada
 Tambah akun lewat UI, transfer antar akun, foto struk, input suara, prediksi bensin, saran menu Makan via Claude API.
+
+## Logo
+Logo bank dan e-wallet (Jago, blu, GoPay, OVO, DANA, BCA, Mandiri, dan lainnya) dicocokkan otomatis dari nama akun. Logo koin diambil dari CoinGecko. Untuk akun lain, isi kolom **Logo** dengan alamat situs resminya (misal `bbca.co.id`) atau URL gambar. Kalau logo gagal dimuat, app menampilkan huruf pertama nama akun.
+
+## Admin
+Hanya admin (`ADMIN_EMAIL`, bawaan `dandy.pujist@gmail.com`) yang melihat tombol pengaturan di Beranda untuk memilih bagian dan Kantong yang tampil. Email admin harus ada di `ALLOWED_EMAILS`. Pengaturan disimpan di tabel `settings`.
