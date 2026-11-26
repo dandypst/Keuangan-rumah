@@ -1,6 +1,9 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 
-const key = () => Buffer.from(process.env.TOKEN_KEY!, "hex");
+const key = () => {
+  if (!process.env.TOKEN_KEY) throw new Error("TOKEN_KEY belum diisi di environment variables");
+  return createHash("sha256").update(process.env.TOKEN_KEY).digest();
+};
 
 export function enc(plain: string) {
   const iv = randomBytes(12);
