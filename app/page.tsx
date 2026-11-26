@@ -20,5 +20,5 @@ export default async function Home() {
     );
   }
   await syncOwner().catch(() => null); // tarik email Jago baru
-  return <App data={await loadData()} />;
+  return <App data={await loadData(session.user?.email)} />;
 }
