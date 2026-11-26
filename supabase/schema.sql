@@ -59,3 +59,8 @@ insert into pockets (name, opening_balance, opening_at) values
 -- insert into accounts (id,name,type,sub,qty,symbol,source,color,sort) values ('btc','Bitcoin','crypto','BTC',0.0042,'bitcoin','coingecko','#a855f7',4);
 -- insert into accounts (id,name,type,sub,qty,symbol,source,color,sort) values ('bbca','BBCA','stock','20 lot',2000,'BBCA.JK','yahoo','#3b82f6',5);
 -- insert into accounts (id,name,type,sub,qty,symbol,source,color,sort) values ('gold','Emas','gold','5 gram',5,'gold','gold','#eab308',6);
+
+-- Pembaruan (jalankan juga di project yang sudah ada):
+alter table accounts add column if not exists logo text;
+create table if not exists settings (key text primary key, value jsonb not null);
+alter table settings enable row level security;
