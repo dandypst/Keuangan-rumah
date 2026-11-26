@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Data, Tx } from "@/lib/types";
+import type { Account, Data, Tx } from "@/lib/types";
+import AccountForm from "@/components/AccountForm";
 import { MANUAL_CATS } from "@/lib/types";
 
 const R = (n: number) => (n < 0 ? "-" : "") + "Rp" + Math.round(Math.abs(n)).toLocaleString("id-ID");
@@ -54,13 +55,13 @@ function Rows({ rows, name }: { rows: Tx[]; name: (id: string) => string }) {
 }
 
 type Acc = Data["accounts"][number];
-function Asset({ a, M }: { a: Acc; M: (n: number) => string }) {
+function Asset({ a, M, onClick }: { a: Acc; M: (n: number) => string; onClick: () => void }) {
   return (
-    <div className="tx">
+    <button className="tx" style={{ width: "100%" }} onClick={onClick} aria-label={`Ubah ${a.name}`}>
       <i style={{ background: a.color + "33", color: a.color }}>{a.name[0]}</i>
       <div><b>{a.name}</b><small>{a.type} · {a.sub}</small></div>
       <em>{M(a.value)}{a.market && <small className={a.change < 0 ? "dn" : "up"}>{a.change < 0 ? "" : "+"}{a.change.toFixed(2).replace(".", ",")}%</small>}</em>
-    </div>
+    </button>
   );
 }
 
@@ -113,7 +114,8 @@ export default function App({ data }: { data: Data }) {
   const [hide, setHide] = useState(false);
   const [openC, setOpenC] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<"menu" | "form" | null>(null);
+  const [sheet, setSheet] = useState<"menu" | "form" | "acc" | null>(null);
+  const [editing, setEditing] = useState<Account | null>(null);
   const [toast, setToast] = useState("");
   const [quotes, setQuotes] = useState<Record<string, { p: number; c: number }>>({});
 
@@ -125,6 +127,7 @@ export default function App({ data }: { data: Data }) {
   }, [router]);
 
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2200); };
+  const openAcc = (a: Account | null) => { setEditing(a); setSheet("acc"); };
   const accs = data.accounts.map((a) => {
     if (!a.market) return a;
     const q = quotes[a.key];
@@ -218,8 +221,8 @@ export default function App({ data }: { data: Data }) {
                 </div>
               ))}
             </div>
-            <p className="gh"><b>Daftar akun dan aset</b><span>{rest.length + (coins.length ? 1 : 0)} akun</span></p>
-            {rest.map((a) => <Asset key={a.id} a={a} M={M} />)}
+            <p className="gh"><b>Daftar akun dan aset</b><button className="chip" onClick={() => openAcc(null)}>+ Tambah akun</button></p>
+            {rest.map((a) => <Asset key={a.id} a={a} M={M} onClick={() => openAcc(a)} />)}
             {coins.length > 0 && (
               <>
                 <button className="tx" style={{ width: "100%" }} onClick={() => setOpenC(!openC)} aria-expanded={openC}>
@@ -227,7 +230,7 @@ export default function App({ data }: { data: Data }) {
                   <div><b>Kripto</b><small>{coins.length} koin · {openC ? "ketuk untuk tutup" : "ketuk untuk lihat"}</small></div>
                   <em>{M(cv)}<small className={cc < 0 ? "dn" : "up"}>{cc < 0 ? "" : "+"}{cc.toFixed(2).replace(".", ",")}%</small></em>
                 </button>
-                {openC && <div style={{ marginLeft: 16 }}>{coins.map((a) => <Asset key={a.id} a={a} M={M} />)}</div>}
+                {openC && <div style={{ marginLeft: 16 }}>{coins.map((a) => <Asset key={a.id} a={a} M={M} onClick={() => openAcc(a)} />)}</div>}
               </>
             )}
           </>
@@ -302,8 +305,11 @@ export default function App({ data }: { data: Data }) {
                   <button onClick={() => setSheet("form")}><Ic d={P.pen} /><span>Catat manual</span></button>
                   <button onClick={() => say("Foto struk menyusul")}><Ic d={P.cam} /><span>Foto struk</span></button>
                   <button onClick={() => say("Catat lewat suara menyusul")}><Ic d={P.mic} /><span>Suara</span></button>
+                  <button onClick={() => openAcc(null)}><Ic d={P.wal} /><span>Tambah akun atau aset</span></button>
                 </div>
               </>
+            ) : sheet === "acc" ? (
+              <AccountForm acc={editing} onClose={() => setSheet(null)} onSaved={(m) => { setSheet(null); router.refresh(); say(m); }} />
             ) : (
               <Form accs={accs.filter((a) => !a.market && a.id !== "jago")} onClose={() => setSheet(null)} onSaved={() => { setSheet(null); router.refresh(); say("Transaksi disimpan"); }} />
             )}
