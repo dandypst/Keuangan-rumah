@@ -112,6 +112,7 @@ export default function App({ data }: { data: Data }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("home");
   const [hide, setHide] = useState(false);
+  const [ym, setYm] = useState<[number, number]>(() => { const [y, m] = data.end.split("-").map(Number); return [y, m]; });
   const [openC, setOpenC] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
   const [sheet, setSheet] = useState<"menu" | "form" | "acc" | null>(null);
@@ -147,10 +148,12 @@ export default function App({ data }: { data: Data }) {
   };
   const grad = (c: string) => `linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 55%, #000))`;
 
-  const [ey, em] = data.end.split("-").map(Number);
+  const [ey, em] = ym;
+  const shift = (d: number) => { const t = new Date(ey, em - 1 + d, 1); setYm([t.getFullYear(), t.getMonth() + 1]); setSel(null); };
   const lead = (new Date(ey, em - 1, 1).getDay() + 6) % 7;
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Jakarta" });
-  const actRows = data.txs.filter((t) => !sel || t.date === sel);
+  const mk = `${ey}-${String(em).padStart(2, "0")}`;
+  const actRows = data.txs.filter((t) => (sel ? t.date === sel : t.date.startsWith(mk)));
 
   const cats: Record<string, number> = {};
   cyc.filter((t) => t.amount < 0).forEach((t) => (cats[t.cat] = (cats[t.cat] || 0) - t.amount));
@@ -238,7 +241,7 @@ export default function App({ data }: { data: Data }) {
 
         {tab === "act" && (
           <>
-            <div className="top"><h2>Aktivitas</h2><span className="pill">{new Date(ey, em - 1, 1).toLocaleDateString("id-ID", { month: "short", year: "numeric" })}</span></div>
+            <div className="top"><h2>Aktivitas</h2><div className="mnav"><button className="ib" style={{ fontSize: 20 }} onClick={() => shift(-1)} aria-label="Bulan sebelumnya">‹</button><span className="pill">{new Date(ey, em - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" })}</span><button className="ib" style={{ fontSize: 20 }} onClick={() => shift(1)} aria-label="Bulan berikutnya">›</button></div></div>
             <div className="card" style={{ margin: 0 }}>
               <div className="cal">
                 {["SEN", "SEL", "RAB", "KAM", "JUM", "SAB", "MIN"].map((x) => <span key={x}>{x}</span>)}
@@ -257,7 +260,7 @@ export default function App({ data }: { data: Data }) {
               <div className="tile"><small>Pengeluaran</small><b className="dn">{R(-actRows.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0))}</b></div>
               <div className="tile"><small>Pemasukan</small><b className="up">{R(actRows.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0))}</b></div>
             </div>
-            {sel && <p className="gh"><span>{dl(sel)}</span><button className="chip" onClick={() => setSel(null)}>Tampilkan semua ×</button></p>}
+            {sel && <p className="gh"><span>{dl(sel)}</span><button className="chip" onClick={() => setSel(null)}>Semua tanggal ×</button></p>}
             <Rows rows={actRows} name={name} />
           </>
         )}
