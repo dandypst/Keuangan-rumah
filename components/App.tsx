@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Account, Data, Tx } from "@/lib/types";
+import type { Account, Data, Pocket, Tx } from "@/lib/types";
+import PocketForm from "@/components/PocketForm";
 import AccountForm from "@/components/AccountForm";
 import { MANUAL_CATS } from "@/lib/types";
 
@@ -115,7 +116,8 @@ export default function App({ data }: { data: Data }) {
   const [ym, setYm] = useState<[number, number]>(() => { const [y, m] = data.end.split("-").map(Number); return [y, m]; });
   const [openC, setOpenC] = useState(false);
   const [sel, setSel] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<"menu" | "form" | "acc" | null>(null);
+  const [sheet, setSheet] = useState<"menu" | "form" | "acc" | "pk" | null>(null);
+  const [pk, setPk] = useState<Pocket | null>(null);
   const [editing, setEditing] = useState<Account | null>(null);
   const [toast, setToast] = useState("");
   const [quotes, setQuotes] = useState<Record<string, { p: number; c: number }>>({});
@@ -196,9 +198,10 @@ export default function App({ data }: { data: Data }) {
               <button className="row" onClick={() => setTab("rep")}><span>Ringkasan analisis siap</span><span>Lihat ›</span></button>
             </section>
             <h3>Kantong Bank Jago</h3>
+            <p className="mute" style={{ fontSize: 12, margin: "-4px 0 8px" }}>Ketuk Kantong untuk menyesuaikan saldonya dengan app Jago.</p>
             <div className="pk">
               {data.pockets.map((k) => (
-                <div key={k.name} className={"pc" + (k.warn ? " w" : "")}>
+                <div key={k.name} className={"pc" + (k.warn ? " w" : "")} role="button" tabIndex={0} style={{ cursor: "pointer" }} onClick={() => { setPk(k); setSheet("pk"); }}>
                   <div className="t"><span className="n">{k.name}</span><b>{M(k.bal)}</b></div>
                   <div className="bar"><i style={{ width: `${k.frac * 100}%` }} /><b style={{ left: `${data.timeFrac * 100}%` }} /></div>
                   <div className="r"><span>{M(k.perDay)} / hari</span><span className={k.warn ? "dn" : "up"}>{k.warn ? "Lebih cepat dari waktu" : "Aman"}</span></div>
@@ -311,6 +314,8 @@ export default function App({ data }: { data: Data }) {
                   <button onClick={() => openAcc(null)}><Ic d={P.wal} /><span>Tambah akun atau aset</span></button>
                 </div>
               </>
+            ) : sheet === "pk" && pk ? (
+              <PocketForm pocket={pk} onClose={() => setSheet(null)} onSaved={(m) => { setSheet(null); router.refresh(); say(m); }} />
             ) : sheet === "acc" ? (
               <AccountForm acc={editing} onClose={() => setSheet(null)} onSaved={(m) => { setSheet(null); router.refresh(); say(m); }} />
             ) : (

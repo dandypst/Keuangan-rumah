@@ -84,7 +84,7 @@ export default function AccountForm({ acc, onClose, onSaved }: { acc: Account | 
       <input id="ak" placeholder="Tabungan, kebutuhan harian, dan sebagainya" value={sub} onChange={(e) => setSub(e.target.value)} />
 
       {derived ? (
-        <p className="mute" style={{ fontSize: 12 }}>Saldo Bank Jago dihitung otomatis dari Kantong dan email Jago, jadi tidak bisa diubah manual.</p>
+        <p className="mute" style={{ fontSize: 12 }}>Saldo Bank Jago adalah jumlah semua Kantong. Untuk menyesuaikannya, ketuk Kantong di tab Beranda.</p>
       ) : (
         <>
           <label htmlFor="av">{amountLabel}</label>
