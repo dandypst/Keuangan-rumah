@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import type { Account } from "@/lib/types";
 
 const TYPES = [["bank", "Bank"], ["ewallet", "E-wallet"], ["cash", "Tunai"], ["crypto", "Kripto"], ["stock", "Saham"], ["gold", "Emas"]] as const;
-type Hit = { id: string; name: string; symbol: string };
+type Hit = { id: string; name: string; symbol: string; thumb?: string };
 
 export default function AccountForm({ acc, onClose, onSaved }: { acc: Account | null; onClose: () => void; onSaved: (msg: string) => void }) {
   const edit = !!acc;
@@ -12,6 +12,7 @@ export default function AccountForm({ acc, onClose, onSaved }: { acc: Account | 
   const [name, setName] = useState(acc?.name ?? "");
   const [sub, setSub] = useState(acc?.sub ?? "");
   const [symbol, setSymbol] = useState(acc?.symbol ?? "");
+  const [logo, setLogo] = useState(acc?.logoRaw ?? "");
   const [num, setNum] = useState(acc ? String(acc.market ? acc.qty : Math.round(acc.value)) : "");
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<Hit[]>([]);
@@ -35,7 +36,7 @@ export default function AccountForm({ acc, onClose, onSaved }: { acc: Account | 
     const r = await fetch("/api/accounts", {
       method: edit ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: acc?.id, type, name: name.trim(), sub: sub.trim(), amount: n, symbol }),
+      body: JSON.stringify({ id: acc?.id, type, name: name.trim(), sub: sub.trim(), amount: n, symbol, logo: logo.trim() }),
     });
     setBusy(false);
     if (!r.ok) return setErr("Gagal menyimpan. Coba lagi.");
@@ -64,7 +65,7 @@ export default function AccountForm({ acc, onClose, onSaved }: { acc: Account | 
           <label htmlFor="aq">Cari koin</label>
           <input id="aq" placeholder="Ketik nama atau simbol, misal sui" value={q} onChange={(e) => setQ(e.target.value)} />
           {hits.map((h) => (
-            <button key={h.id} className="btn" style={{ textAlign: "left", marginTop: 6, width: "100%" }} onClick={() => { setSymbol(h.id); setName(h.name); setSub(h.symbol.toUpperCase()); setHits([]); setQ(""); }}>
+            <button key={h.id} className="btn" style={{ textAlign: "left", marginTop: 6, width: "100%" }} onClick={() => { setSymbol(h.id); setName(h.name); setSub(h.symbol.toUpperCase()); if (h.thumb) setLogo(h.thumb); setHits([]); setQ(""); }}>
               {h.name} · {h.symbol.toUpperCase()}
             </button>
           ))}
@@ -82,6 +83,8 @@ export default function AccountForm({ acc, onClose, onSaved }: { acc: Account | 
       <input id="an" placeholder={type === "bank" ? "Bank BCA" : type === "ewallet" ? "GoPay" : "Nama akun"} value={name} onChange={(e) => setName(e.target.value)} />
       <label htmlFor="ak">Keterangan (opsional)</label>
       <input id="ak" placeholder="Tabungan, kebutuhan harian, dan sebagainya" value={sub} onChange={(e) => setSub(e.target.value)} />
+      <label htmlFor="al">Logo (opsional)</label>
+      <input id="al" placeholder="Alamat situs (jago.com) atau URL gambar" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
       {derived ? (
         <p className="mute" style={{ fontSize: 12 }}>Saldo Bank Jago adalah jumlah semua Kantong. Untuk menyesuaikannya, ketuk Kantong di tab Beranda.</p>
