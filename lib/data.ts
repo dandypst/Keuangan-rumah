@@ -34,7 +34,7 @@ export async function loadData(): Promise<Data> {
     const price = quotes[key]?.p ?? 0;
     const qty = Number(r.qty ?? 0);
     const value = r.id === "jago" ? jago : market ? qty * price || Number(r.balance) : Number(r.balance);
-    return { id: r.id, name: r.name, type: r.type, sub: r.sub, color: r.color, market, qty, price, change: quotes[key]?.c ?? 0, key, value };
+    return { id: r.id, name: r.name, type: r.type, sub: r.sub, color: r.color, market, symbol: r.symbol ?? "", qty, price, change: quotes[key]?.c ?? 0, key, value };
   });
 
   const txs = all
