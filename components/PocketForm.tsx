@@ -2,9 +2,9 @@
 import { useState } from "react";
 import type { Pocket } from "@/lib/types";
 
-export default function PocketForm({ pocket, onClose, onSaved }: { pocket: Pocket | null; onClose: () => void; onSaved: (msg: string) => void }) {
+export default function PocketForm({ pocket, presetName, onClose, onSaved }: { pocket: Pocket | null; presetName?: string; onClose: () => void; onSaved: (msg: string) => void }) {
   const edit = !!pocket;
-  const [name, setName] = useState(pocket?.name ?? "");
+  const [name, setName] = useState(pocket?.name ?? presetName ?? "");
   const [bal, setBal] = useState(pocket ? String(Math.round(pocket.bal)) : "");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);

@@ -127,6 +127,7 @@ export default function App({ data }: { data: Data }) {
   const [sheet, setSheet] = useState<"menu" | "form" | "acc" | "pk" | "home" | null>(null);
   const [editing, setEditing] = useState<Account | null>(null);
   const [editingPk, setEditingPk] = useState<Pocket | null>(null);
+  const [pkName, setPkName] = useState("");
   const [toast, setToast] = useState("");
   const [quotes, setQuotes] = useState<Record<string, { p: number; c: number }>>({});
 
@@ -139,7 +140,7 @@ export default function App({ data }: { data: Data }) {
 
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2200); };
   const openAcc = (a: Account | null) => { setEditing(a); setSheet("acc"); };
-  const openPk = (k: Pocket) => { setEditingPk(k); setSheet("pk"); };
+  const openPk = (k: Pocket | null, preset = "") => { setEditingPk(k); setPkName(preset); setSheet("pk"); };
   const done = (m: string) => { setSheet(null); router.refresh(); say(m); };
 
   const accs = data.accounts.map((a) => {
@@ -287,7 +288,19 @@ export default function App({ data }: { data: Data }) {
                   {open[it.key] && (
                     <div style={{ marginLeft: 16 }}>
                       {g.jago && data.pockets.map(pocketRow)}
-                      {g.jago && <button className="chip" style={{ marginBottom: 8 }} onClick={() => openAcc(it.ms.find((a) => a.id === "jago") ?? null)}>Ubah akun {g.title}</button>}
+                      {g.jago && data.untracked.map((n) => (
+                        <button key={n} className="tx" style={{ width: "100%" }} onClick={() => openPk(null, n)}>
+                          <i style={{ background: col(n) + "22", color: col(n) }}>{n[0]}</i>
+                          <div><b>{n}</b><small>Terdeteksi di email Jago, belum terdaftar</small></div>
+                          <em className="dn">Isi saldo</em>
+                        </button>
+                      ))}
+                      {g.jago && (
+                        <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                          <button className="chip" onClick={() => openPk(null)}>+ Tambah Kantong</button>
+                          <button className="chip" onClick={() => openAcc(it.ms.find((a) => a.id === "jago") ?? null)}>Ubah akun {g.title}</button>
+                        </div>
+                      )}
                       {it.ms.filter((a) => a.id !== "jago").map((a) => <Asset key={a.id} a={a} M={M} child={!g.crypto} onClick={() => openAcc(a)} />)}
                     </div>
                   )}
@@ -379,7 +392,7 @@ export default function App({ data }: { data: Data }) {
             )}
             {sheet === "form" && <Form accs={accs.filter((a) => !a.market && a.id !== "jago")} onClose={() => setSheet(null)} onSaved={() => done("Transaksi disimpan")} />}
             {sheet === "acc" && <AccountForm acc={editing} onClose={() => setSheet(null)} onSaved={done} />}
-            {sheet === "pk" && editingPk && <PocketForm pocket={editingPk} onClose={() => setSheet(null)} onSaved={done} />}
+            {sheet === "pk" && <PocketForm pocket={editingPk} presetName={pkName} onClose={() => setSheet(null)} onSaved={done} />}
             {sheet === "home" && data.isAdmin && <HomeSettings home={data.home} pockets={data.pockets} onClose={() => setSheet(null)} onSaved={done} />}
           </div>
         </div>
