@@ -3,7 +3,7 @@
 const FAV = (d: string) => `https://www.google.com/s2/favicons?domain=${d}&sz=128`;
 const KNOWN: [RegExp, string][] = [
   [/jago/i, "jago.com"],
-  [/\bblu\b/i, "blubybcadigital.id"],
+  [/\bblu\b/i, "app:1550237185"], // ikon app blu di App Store
   [/gopay/i, "gopay.co.id"],
   [/\bovo\b/i, "ovo.id"],
   [/\bdana\b/i, "dana.id"],
@@ -21,7 +21,7 @@ const KNOWN: [RegExp, string][] = [
 
 export function logoUrl(name: string, logo?: string | null): string | null {
   const l = (logo ?? "").trim();
-  if (l) return /^(https?:)?\/\//.test(l) || l.startsWith("/") ? l : FAV(l);
+  if (l) return l.startsWith("app:") || /^(https?:)?\/\//.test(l) || l.startsWith("/") ? l : FAV(l);
   const k = KNOWN.find(([re]) => re.test(name));
-  return k ? FAV(k[1]) : null;
+  return k ? (k[1].startsWith("app:") ? k[1] : FAV(k[1])) : null;
 }

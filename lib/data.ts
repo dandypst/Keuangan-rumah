@@ -5,6 +5,16 @@ import { logoUrl } from "./logo";
 import { isAdmin } from "./admin";
 import type { Account, Data, Home } from "./types";
 
+// Ikon app dari App Store (iTunes lookup), dipakai untuk logo berformat "app:ID".
+async function appIcon(id: string): Promise<string> {
+  try {
+    const j = await fetch(`https://itunes.apple.com/lookup?id=${id}&country=id`, { next: { revalidate: 86400 } }).then((r) => r.json());
+    return j.results?.[0]?.artworkUrl512 ?? "";
+  } catch {
+    return "";
+  }
+}
+
 const day = (iso: string) => new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Asia/Jakarta" });
 
 export async function loadData(email?: string | null): Promise<Data> {
@@ -51,13 +61,19 @@ export async function loadData(email?: string | null): Promise<Data> {
   const untracked = [...new Set(all.filter((x) => x.pocket && !known.has(String(x.pocket).toLowerCase())).map((x) => x.pocket as string))];
 
   const jago = pockets.reduce((s, k) => s + k.bal, 0);
-  const accounts: Account[] = rows.map((r) => {
+  const resolved = await Promise.all(
+    rows.map(async (r) => {
+      const u = logoUrl(r.name, r.logo);
+      return u?.startsWith("app:") ? appIcon(u.slice(4)) : (u ?? "");
+    }),
+  );
+  const accounts: Account[] = rows.map((r, i) => {
     const key = `${r.source}:${r.symbol}`;
     const market = !!r.source;
     const price = quotes[key]?.p ?? 0;
     const qty = Number(r.qty ?? 0);
     const value = r.id === "jago" ? jago : market ? qty * price || Number(r.balance) : Number(r.balance);
-    return { id: r.id, name: r.name, type: r.type, sub: r.sub, color: r.color, logo: logoUrl(r.name, r.logo) ?? "", logoRaw: r.logo ?? "", market, symbol: r.symbol ?? "", qty, price, change: quotes[key]?.c ?? 0, key, value };
+    return { id: r.id, name: r.name, type: r.type, sub: r.sub, color: r.color, logo: resolved[i], logoRaw: r.logo ?? "", market, symbol: r.symbol ?? "", qty, price, change: quotes[key]?.c ?? 0, key, value };
   });
 
   const txs = all
