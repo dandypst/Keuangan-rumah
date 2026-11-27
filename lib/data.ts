@@ -37,7 +37,7 @@ export async function loadData(email?: string | null): Promise<Data> {
   const timeFrac = daysLeft / total;
 
   const pockets = (p.data ?? []).map((k) => {
-    const mine = all.filter((x) => x.pocket === k.name);
+    const mine = all.filter((x) => String(x.pocket ?? "").toLowerCase() === String(k.name).toLowerCase());
     const sum = (kind: string, from: Date) =>
       mine.filter((x) => x.kind === kind && new Date(x.occurred_at) > from).reduce((s, x) => s + Number(x.amount), 0);
     const bal = Number(k.opening_balance) + sum("topup", new Date(k.opening_at)) - sum("expense", new Date(k.opening_at));
@@ -45,6 +45,10 @@ export async function loadData(email?: string | null): Promise<Data> {
     const frac = bal + spent > 0 ? Math.max(0, bal) / (bal + spent) : 1;
     return { name: k.name as string, bal, perDay: bal / daysLeft, frac, warn: spent > 0 && frac < timeFrac };
   });
+
+  // Kantong yang muncul di email Jago tapi belum terdaftar di tabel pockets.
+  const known = new Set((p.data ?? []).map((k) => String(k.name).toLowerCase()));
+  const untracked = [...new Set(all.filter((x) => x.pocket && !known.has(String(x.pocket).toLowerCase())).map((x) => x.pocket as string))];
 
   const jago = pockets.reduce((s, k) => s + k.bal, 0);
   const accounts: Account[] = rows.map((r) => {
@@ -67,5 +71,5 @@ export async function loadData(email?: string | null): Promise<Data> {
       amount: x.kind === "expense" ? -Number(x.amount) : Number(x.amount),
     }));
 
-  return { accounts, pockets, txs, timeFrac, daysLeft, isAdmin: isAdmin(email), home, start: day(start.toISOString()), end: day(new Date(end.getTime() - 1).toISOString()) };
+  return { accounts, pockets, txs, timeFrac, daysLeft, isAdmin: isAdmin(email), home, untracked, start: day(start.toISOString()), end: day(new Date(end.getTime() - 1).toISOString()) };
 }

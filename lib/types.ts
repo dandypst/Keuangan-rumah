@@ -9,6 +9,6 @@ export type Home = { summary: boolean; txs: boolean; pockets: string[] };
 export type Data = {
   accounts: Account[]; pockets: Pocket[]; txs: Tx[];
   timeFrac: number; daysLeft: number; start: string; end: string;
-  isAdmin: boolean; home: Home;
+  isAdmin: boolean; home: Home; untracked: string[];
 };
 export const MANUAL_CATS = ["Makan", "Transportasi", "Belanja", "Tagihan", "Gaji", "Investasi", "Lainnya"];
