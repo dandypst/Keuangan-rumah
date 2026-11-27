@@ -37,7 +37,7 @@ type Tab = (typeof TABS)[number][0];
 
 function Avatar({ name, color, logo }: { name: string; color: string; logo?: string }) {
   const [bad, setBad] = useState(false);
-  if (logo && !bad) return <img className="lg" src={logo} alt="" width={38} height={38} referrerPolicy="no-referrer" onError={() => setBad(true)} />;
+  if (logo && !bad) return <img className="lg" src={logo} alt="" width={38} height={38} referrerPolicy="no-referrer" onLoad={(e) => e.currentTarget.naturalWidth <= 16 && setBad(true)} onError={() => setBad(true)} />;
   return <i style={{ background: color + "33", color }}>{name[0]}</i>;
 }
 
